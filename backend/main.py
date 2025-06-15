@@ -19,15 +19,19 @@ app = FastAPI(
     description="API for predicting customer churn and suggesting retention strategies for service providers in India.",
     version="1.0.0"
 )
+origins = [
+    "http://localhost:3000", # For local frontend development
+    "https://customer-churn-prediction-two.vercel.app",
+]
 
-# --- Enable CORS for Frontend ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://customer-churn-prediction-two.vercel.app/"], # In production, replace "*" with your frontend URL(s)
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["https://customer-churn-prediction-two.vercel.app/"],
-    allow_headers=["https://customer-churn-prediction-two.vercel.app/"],
+    allow_methods=["*"], # Allows all methods (GET, POST, etc.)
+    allow_headers=["*"], # Allows all headers
 )
+
 
 # --- Load Trained Model ---
 model_pipeline = None
