@@ -1,0 +1,24 @@
+# .gitignore for the 'frontend/' directory
+
+# Node.js modules
+node_modules/
+
+# SvelteKit/Vite build output
+dist/
+.svelte-kit/
+.vite/
+
+# Environment variables (critical to ignore)
+.env
+.env.*
+
+# IDE-specific files (optional - sometimes useful to share config)
+.vscode/
+
+# Other common frontend ignores
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.parcel-cache/ # If using Parcel
+.rpt2_cache/   # If using rollup-plugin-typescript2
+.tsbuildinfo    # TypeScript build output
