@@ -5,6 +5,10 @@ import joblib
 import pandas as pd
 import os
 import numpy as np
+from dotenv import load_dotenv # Import load_dotenv
+
+# Load environment variables from .env file (if it exists)
+load_dotenv()
 
 # --- Configuration ---
 MODEL_PATH = 'model/churn_model_clean.pkl' # Ensure this points to your latest model
@@ -19,7 +23,7 @@ app = FastAPI(
 # --- Enable CORS for Frontend ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"], # In production, replace "*" with your frontend URL(s)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -28,6 +32,11 @@ app.add_middleware(
 # --- Load Trained Model ---
 model_pipeline = None
 try:
+    # Adjust MODEL_PATH for execution from backend/ directory if your model is in backend/model/
+    # If main.py is directly in 'backend/', and model is in 'backend/model/', then 'model/churn_model_clean.pkl' is correct.
+    # If main.py is in 'backend/app/' and model is in 'backend/model/', it would be '../model/churn_model_clean.pkl'
+    # Assuming main.py is in 'backend/' for now based on your structure screenshot.
+    
     if not os.path.exists(MODEL_PATH):
         raise FileNotFoundError(f"Model not found at {MODEL_PATH}")
     model_pipeline = joblib.load(MODEL_PATH)
@@ -103,21 +112,24 @@ async def predict_churn(data: ChurnPredictionRequest):
     try:
         rename_map = {
             "Usage_Frequency": "Usage Frequency",
-            "Support_Calls": "Support Calls",
-            "Payment_Delay": "Payment Delay",
+            "Support_Calls": "Support Calls", 
+            "Payment_Delay": "Payment Delay", 
             "Subscription_Type": "Subscription Type",
             "Contract_Length": "Contract Length",
             "Last_Interaction": "Last Interaction"
         }
 
-        input_df = pd.DataFrame([data.dict()]).rename(columns=rename_map)
+        # Create DataFrame from request data and rename columns
+        input_df = pd.DataFrame([data.model_dump()]).rename(columns=rename_map) # Use model_dump() for Pydantic v2
 
+        # Ensure correct column order as expected by the trained pipeline
         expected_columns_order = [
             'Age', 'Gender', 'Tenure', 'Usage Frequency', 'Support Calls',
             'Payment Delay', 'Subscription Type', 'Contract Length', 'Last Interaction'
         ]
         input_df = input_df[expected_columns_order]
 
+        # Ensure categorical columns are of 'str' dtype before passing to pipeline
         for col in ['Gender', 'Subscription Type', 'Contract Length']:
             input_df[col] = input_df[col].astype(str)
 
@@ -150,21 +162,24 @@ async def recommend_strategy(data: ChurnPredictionRequest):
     try:
         rename_map = {
             "Usage_Frequency": "Usage Frequency",
-            "Support_Calls": "Support_Calls", # Fix: Should be Support_Calls not Support Calls as in previous version
-            "Payment_Delay": "Payment_Delay", # Fix: Should be Payment_Delay not Payment Delay as in previous version
-            "Subscription_Type": "Subscription_Type",
-            "Contract_Length": "Contract_Length",
-            "Last_Interaction": "Last_Interaction"
+            "Support_Calls": "Support Calls", # Fixed from Support_Calls to "Support Calls" to match training data
+            "Payment_Delay": "Payment Delay", # Fixed from Payment_Delay to "Payment Delay" to match training data
+            "Subscription_Type": "Subscription Type",
+            "Contract_Length": "Contract Length",
+            "Last_Interaction": "Last Interaction"
         }
 
-        input_df = pd.DataFrame([data.dict()]).rename(columns=rename_map)
+        # Create DataFrame from request data and rename columns
+        input_df = pd.DataFrame([data.model_dump()]).rename(columns=rename_map) # Use model_dump() for Pydantic v2
 
+        # Ensure correct column order as expected by the trained pipeline
         expected_columns_order = [
             'Age', 'Gender', 'Tenure', 'Usage Frequency', 'Support Calls',
             'Payment Delay', 'Subscription Type', 'Contract Length', 'Last Interaction'
         ]
         input_df = input_df[expected_columns_order]
 
+        # Ensure categorical columns are of 'str' dtype before passing to pipeline
         for col in ['Gender', 'Subscription Type', 'Contract Length']:
             input_df[col] = input_df[col].astype(str)
         
@@ -187,3 +202,13 @@ async def recommend_strategy(data: ChurnPredictionRequest):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Recommendation error: {e}")
+
+
+# --- Uvicorn Server Startup ---
+if __name__ == "__main__":
+    import uvicorn
+    # Get port from environment variable, default to 8080 for local development
+    # This ensures compatibility with hosting platforms that set the PORT env var
+    PORT = int(os.getenv("PORT", 8080))
+    print(f"🚀 Starting FastAPI server on http://0.0.0.0:{PORT}")
+    uvicorn.run("main:app", host="0.0.0.0", port=PORT, reload=True)
