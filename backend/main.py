@@ -23,10 +23,10 @@ app = FastAPI(
 # --- Enable CORS for Frontend ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, replace "*" with your frontend URL(s)
+    allow_origins=["https://customer-churn-prediction-two.vercel.app/"], # In production, replace "*" with your frontend URL(s)
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["https://customer-churn-prediction-two.vercel.app/"],
+    allow_headers=["https://customer-churn-prediction-two.vercel.app/"],
 )
 
 # --- Load Trained Model ---
@@ -153,6 +153,8 @@ async def predict_churn(data: ChurnPredictionRequest):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Prediction error: {e}")
+
+
 
 # --- Recommend Only ---
 @app.post("/recommend/", response_model=RecommendationResponse)
