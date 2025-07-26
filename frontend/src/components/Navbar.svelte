@@ -4,7 +4,6 @@
     <div class="space-x-6">
       <a href="/" class="hover:underline">Home</a>
       <a href="/churn" class="hover:underline">Predict</a>
-      <a href="/recommend" class="hover:underline">Recommend</a>
     </div>
   </div>
 </nav>

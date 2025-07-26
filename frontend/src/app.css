@@ -1,1 +1,16 @@
-@import "tailwindcss";
+/* app.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
+@import "tailwindcss"; /* Simplified import for newer Tailwind versions */
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    /* If you want a different body font, you'd add another import and apply it here */
+    /* font-family: 'Open Sans', sans-serif; */
+}
+
+/* Ensure your main heading uses Montserrat's bolder weight */
+h1, .hero-heading {
+    font-weight: 700; /* Or 600 */
+}
